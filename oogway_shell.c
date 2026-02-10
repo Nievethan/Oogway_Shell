@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define MAX_LINE 1024 // Line size limit
 #define MAX_ARGS 64 // Argument quantity limit
@@ -13,7 +15,17 @@ int main(int argc, char *argv[]) {
 
 	char input_buffer[MAX_LINE]; // Typespace array for shell commands
 	char *args[MAX_ARGS]; // Character pointer holding the arguments
-	char cwd[MAX_LINE];
+	char cwd[MAX_LINE]; // Buffer for current working directory path
+	char shell_path[MAX_LINE]; // Buffer for the shell path
+	
+	// Creating shell path
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+		strcpy(shell_path, cwd);
+		strcat(shell_path, "/oogway_shell");
+	}
+	else {
+		perror("Could not determine shell path");
+	}
 
 	// Main Program Loop
 	while (1) {
@@ -67,6 +79,30 @@ int main(int argc, char *argv[]) {
 						setenv("PWD", cwd, 1);
 					}
 				}
+			}
+		}
+		else {
+			// Creating child process
+			pid_t pid = fork();
+			
+			// Fork fail handling
+			if (pid < 0) {
+				perror("Fork failed");
+				exit(1);
+			}
+			// Child Process
+			else if (pid == 0) {
+				setenv("parent", shell_path, 1);
+				// Invalid command error handling
+				if (execvp(args[0], args) == -1) {
+					perror("Command execution failed");
+				}
+				exit(1);
+			}
+			// Parent Process
+			else {
+				int status;
+				waitpid(pid, &status, 0);
 			}
 		}
 	}
