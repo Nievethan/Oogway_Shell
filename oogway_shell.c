@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
 
 	char input_buffer[MAX_LINE]; // Typespace array for shell commands
 	char *args[MAX_ARGS]; // Character pointer holding the arguments
+	char cwd[MAX_LINE];
 
 	// Main Program Loop
 	while (1) {
@@ -34,11 +35,40 @@ int main(int argc, char *argv[]) {
 			args[i] = strtok(NULL, " \t\n");
 		}
 
-		// Testing if the parsing works
-		for (int j = 0; args[j] != NULL; j++) {
-			printf("Token %d: %s\n", j, args[j]);
+		// Handling user hitting "enter" with no command
+		if (args[0] == NULL) {
+			continue; 
+		}
+
+		// QUIT command
+		if (strcmp(args[0], "quit") == 0) {
+			exit(0);
+		}
+		// CLEAR command
+		else if (strcmp(args[0], "clr") == 0) {
+			system("clear");
+		}
+		// CHANGE DIRECTORY command
+		else if (strcmp(args[0], "cd") == 0) {
+			if (args[1] == NULL) {
+				if (getcwd(cwd, sizeof(cwd)) != NULL) {
+					printf("%s\n", cwd);
+				}
+				else {
+					perror("oogway_shell");
+				}
+			}
+			else {
+				if (chdir(args[1]) == -1) {
+					perror("Directory not found");
+				}
+				else {
+					if (getcwd(cwd, sizeof(cwd)) != NULL) {
+						setenv("PWD", cwd, 1);
+					}
+				}
+			}
 		}
 	}
-
 	return 0;
 }
