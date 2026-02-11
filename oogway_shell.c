@@ -1,5 +1,27 @@
 #include "oogway_shell.h"
 
+void oogway_greet() {
+	FILE *fp = fopen("oogway.txt", "r"); // Opening text file
+
+	// Printing text file
+	if (fp != NULL) {
+		char buffer[1024];
+		printf("\033[1;32m"); // Make it green
+		printf("GREETINGS DRAGON WARRIOR\n");
+		while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+			printf("%s", buffer);
+		}
+		printf("THERE ARE NO ACCIDENTS...\n");
+		printf("...ONE OFTEN MEETS HIS DESTINY ON THE ROAD HE TAKES TO AVOID IT...\n");
+		printf("\033[0m"); // Reset colour
+		fclose(fp);
+	}
+	else {
+		printf("Welcome to the Oogway Shell!\n");
+	}
+	printf("\n");
+}
+
 int main(int argc, char *argv[]) {
 	char input_buffer[MAX_LINE]; // Typespace array for shell commands
 	char cwd[MAX_LINE]; // Buffer for current working directory path
@@ -23,6 +45,10 @@ int main(int argc, char *argv[]) {
 			perror("Error opening batch file");
 			exit(1);
 		}
+	}
+
+	if (input_stream == stdin) {
+		oogway_greet();
 	}
 
 	// Main Program Loop
